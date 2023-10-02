@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+</head>
+
+<body>
+<h1>This is a chatroom!</h1>
+<p>Of course, as you can see.</p>
+</body>
+<script type="text/javascript" src="/static/js/websocket.js?v=1.2.1"></script>
+<script type="text/javascript">
+    var userid = null;
+    /**webSocket**/
+    try {
+        //激活 socket
+        var websocket = websocketInit();
+        //接收数据 onmessage
+        socketMessage();
+        websocket.onerror = function(evt) {
+            console.log('socket error');
+        };
+    } catch (e) {
+        console.log(e);
+    }
+</script>
+</html>
