@@ -29,6 +29,8 @@ for ucas home work only
 yum -y install gcc gcc-c++ openssl-devel
 yum install libxml2 libxml2-devel sqlite-devel.x86_64 httpd-devel
 yum install autoconf wget git
+firewall-cmd --zone=public --add-port=80/tcp --permanent 
+firewall-cmd --reload 
 ```
 2. 创建目录结构
 ```
