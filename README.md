@@ -56,14 +56,23 @@ cd /home/ucasuser/downloads/php-7.4.33
 make
 make install
 ```
-5. 安装结果验证
+5. nginx 安装
+```
+cd /home/ucasuser/downloads/nginx-1.25.2
+./configure --prefix=/home/ucasuser/apps/nginx --with-pcre --with-stream --with-http_ssl_module --with-stream_ssl_module
+make
+make install
+```
+6. 安装结果验证
 ```
 /home/ucasuser/apps/php7/bin/php -m | grep swoole
+/home/ucasuser/apps/nginx/sbin/nginx -version
 ```
-如果可以正常执行并正确返回所安装的 swoole 模块信息，则表示安装成功。
-6. 软件配置
+如果两个命令可以正常执行并正确返回所安装的 swoole 模块名称和 nginx 的版本信息，则表示安装成功。
+7. 软件配置 **todo**
 ```
 vim php.ini
+vim nginx.conf
 ```
 
 
