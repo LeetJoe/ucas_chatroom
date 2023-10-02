@@ -92,7 +92,7 @@ vim nginx.conf
 
 
 
-
+```
 ps aux | grep php | grep server | awk '{print $2}'
 
 ps aux | grep php | grep server | awk '{print $2}' | xargs kill -9
@@ -134,7 +134,7 @@ server_name   socket.ucaschatroom.com;
         }
 }
 
-
+```
 
 
 
