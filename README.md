@@ -82,12 +82,60 @@ vim nginx.conf
 1. 从 github 下载 [LeetJoe/ucas_chatroom](https://github.com/LeetJoe/ucas_chatroom) 项目源代码，并将代码目录部署到 /home/ucasuser/www/ucaschat；
 2. 执行下面的代码启动服务
 ```
-cd /home/ucasuser/apps/php7
-./sbin/php-fpm
+/home/ucasuser/apps/php7/bin/php /home/ucasuser/www/ucaschat/chat_server.php
+# switch to root
+/home/ucasuser/apps/nginx/sbin/nginx
 ```
 
 
 # 功能验证
+
+
+
+
+ps aux | grep php | grep server | awk '{print $2}'
+
+ps aux | grep php | grep server | awk '{print $2}' | xargs kill -9
+
+
+tail -f /home/ucasuser/www/ucaschat/log/chat.log
+
+
+
+upstream www.ucaschatroom.com {
+server 127.0.0.1:80;
+keepalive 2000;
+}
+
+upstream socket.ucaschatroom.com {
+hash $remote_addr consistent;
+server 127.0.0.1:20230;
+}
+server {
+listen 80;
+server_name   www.ucaschatroom.com;
+
+        location / {
+                root /home/ucasuser/www/ucaschat;
+                index index.html;
+        }
+}
+
+server {
+listen 80;
+server_name   socket.ucaschatroom.com;
+
+        location / {
+                proxy_pass http://socket.ucaschatroom.com/;
+                proxy_set_header Host $host:$server_port;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+        }
+}
+
+
+
 
 
 
