@@ -3,11 +3,10 @@ function websocketInit() {
     //已经激活,不再触发
     if (typeof websocket != 'object' || websocket.readyState != 1 || typeof websocket == 'undefined') {
         var wsprotocal = document.location.protocol == 'https:' ? 'wss:' : 'ws:';
-        var domain_name = document.domain;
         var wsUri = wsprotocal + "//" + "socket.ucaschatroom.com";
         websocket = new WebSocket(wsUri);
         websocket.onopen = function () {
-            console.log('激活' + websocket.readyState);
+            console.log('connection open. state: ' + websocket.readyState);
         };
         return websocket;
     } else {
