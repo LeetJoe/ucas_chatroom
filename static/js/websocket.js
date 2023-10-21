@@ -1,3 +1,4 @@
+
 //激活 socket
 function websocketInit() {
     //已经激活,不再触发
@@ -36,9 +37,18 @@ function socketMessage() {
     }
 }
 
+// user send message
+function usersend() {
+    // 获取输入的消息内容
+    const message = messageInput.value;
+    sendmsg(message);
 
-// send data to server
-// @type: msg for message; name for new name; leave for close;
+    // 清空输入框
+    messageInput.value = '';
+}
+
+
+// send message to server
 function sendmsg(umsg, type='msg') {
     websocket.send('{"type":"' + type + '", "msg":"' + umsg + '"}');
 }
@@ -47,7 +57,7 @@ function sendmsg(umsg, type='msg') {
 // received data structure: {"type":"<type>", "uid": "<userid>", "uname": "<username>", "data":"<text message>"}
 function processWsData(d) {
     var data = JSON.parse(d);
-    console.log('data.type: ' + data.type);
+    // console.log(data);
     if (data.type == 'newconnect') {
         // prompt for a name
         var word = prompt(data.data,"");
@@ -59,7 +69,7 @@ function processWsData(d) {
         // show welcome and record the userid
         userid = data.uid;
         username = data.uname;
-        alert(data.data);
+        // alert(data.data);
 
     } else if (data.type == 'newmsg') {
         // display the new message
@@ -67,11 +77,13 @@ function processWsData(d) {
 
     } else if (data.type == 'newjoin') {
         // new user join
-        alert("用户“" + data.data + "”加入了聊天室。");
+        data.data = "用户“" + data.data + "”加入了聊天室。";
+        addnewmsg(data);
 
     } else if (data.type == 'leave') {
         // someone leave
-        alert("用户“" + data.data + "”离开了聊天室。");
+        data.data = "用户“" + data.data + "”离开了聊天室。";
+        addnewmsg(data);
 
     } else if (data.type == 'alert') {
         alert(data.data);
@@ -85,16 +97,35 @@ function processWsData(d) {
 
 // add the newly received message to the chat window.
 function addnewmsg(data) {
-    // wrap the message into a dom and add it to the page
-    var msgname = data.uname;
-    var msgtext = data.data;
-    if (data.uid == userid) { // my message
-        console.log('you send: ' + msgtext);
-        var domstr = '';
-        // document.getElementById('chat_window').append(domstr);
-    } else { // others message
-        console.log('user ' + msgname + ' send: ' + msgtext);
-        var domstr = '';
-        // document.getElementById('chat_window').append(domstr);
+    if (userid <= 0) return;
+    var message = '';
+
+    // 创建一个新的消息元素
+    const newMessage = document.createElement('div');
+    newMessage.classList.add('message');
+
+    if (data.uid == 0) {
+        // 系统消息
+        newMessage.style.backgroundColor = '#FFFF00';
+        newMessage.style.color = 'red';
+        message = '(系统消息：' + data.data + ')';
+    } else if (data.uid == userid) {
+        // 用户消息
+        newMessage.style.backgroundColor = '#428bca';
+        newMessage.style.color = 'white';
+        message = '“我”说：' + data.data;
+    } else {
+        // 他人消息
+        newMessage.style.backgroundColor = '#f5f5f5';
+        newMessage.style.color = '#333';
+        message = '“' + data.uname + '”说：' + data.data;
     }
+
+    // 设置消息内容和样式
+    newMessage.innerHTML = message;
+    newMessage.style.padding = '5px 10px';
+    newMessage.style.marginBottom = '10px';
+
+    // 将消息添加到对话展示框中
+    chatDisplay.appendChild(newMessage);
 }

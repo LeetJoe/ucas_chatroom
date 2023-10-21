@@ -26,8 +26,12 @@
 
     <script type="text/javascript" src="/static/js/websocket.js?v=1.2.1"></script>
     <script type="text/javascript">
-        var userid = null;
+        var userid = -1;
         var username = '';
+
+        const messageInput = document.getElementById('message-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const chatDisplay = document.querySelector('.chat-display');
         /**webSocket**/
         try {
             //激活 socket
@@ -46,14 +50,20 @@
                 //每20秒发一次请求,防止连接超时
                 setInterval(function () {
                     websocket.send('');
-                }, 30000);
+                }, 20000);
                 websocket.onclose = function (evt) {
-                    alert("连接已断开。刷新页面以重新加入聊天。");
+                    var data = {
+                        uid: 0,
+                        data: "连接已断开。刷新页面以重新加入聊天。"
+                    }
+                    addnewmsg(data);
                 };
             } else {
 
             }
         }, 4000);
+
+        submitBtn.addEventListener('click', usersend);
     </script>
 </body>
 </html>

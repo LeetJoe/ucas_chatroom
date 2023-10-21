@@ -22,11 +22,11 @@ $serv->set($socketConf);
 
 $serv->on('open', function (swoole_websocket_server $server, $request) {
     echo "new connection established with fd: {$request->fd}\n";
-    $server->push($request->fd, json_text("newconnect", "设置姓名后，开始聊天。", $request->fd));
+    $server->push($request->fd, json_text("newconnect", "设置昵称后，开始聊天。", 0));
 });
 
 $serv->on('message', function (swoole_websocket_server $server, $frame) use ($namelist) {
-    if ($frame->data) echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
+    echo "fd:{$frame->fd},data:{$frame->data},oc:{$frame->opcode},fn:{$frame->finish}\n";
     if ($frame->data) {
         $data = json_decode($frame->data); // {"type":"", "msg":""}
         if ($data->type == 'join' && empty($namelist->get($frame->fd))) {
@@ -35,13 +35,12 @@ $serv->on('message', function (swoole_websocket_server $server, $frame) use ($na
             $server->push($frame->fd, json_text("join", "欢迎你，" . $uname . "！现在可以开始聊天了。", $frame->fd, $uname));
             // notify all others
             foreach ($namelist as $item) {
-                if ($item['fd'] == $frame->fd) continue;
                 $server->push($item['fd'], json_text("newjoin", $uname, 0));
             }
         } else if ($data->type == 'msg') {
             $user = $namelist->get($frame->fd);
             if (empty($user)) {
-                $server->push($frame->fd, json_text("newconnect", "设置姓名后，开始聊天。", $frame->fd));
+                $server->push($frame->fd, json_text("newconnect", "设置昵称后，开始聊天。", 0));
             } else {
                 $msg = trim(strval($data->msg));
                 if (!empty($msg)) {
@@ -50,8 +49,9 @@ $serv->on('message', function (swoole_websocket_server $server, $frame) use ($na
                     }
                 }
             }
+        } else {
+            $server->push($frame->fd, '');
         }
-        // $server->push($frame->fd, json_text("debug", "this is server", $frame->fd));
     }
 });
 $serv->on('request', function (swoole_http_request $request, swoole_http_response $response) use ($serv) {
@@ -66,7 +66,7 @@ $serv->on('close', function ($server, $fd) use ($namelist) {
         $namelist->del($fd);
         echo "client {$fd} closed\n";
         foreach ($namelist as $item) {
-            $server->push($item['fd'], json_text("leave", $user['name'], $user['fd']));
+            $server->push($item['fd'], json_text("leave", $user['name'], 0));
         }
     }
 });
@@ -74,5 +74,5 @@ $serv->on('close', function ($server, $fd) use ($namelist) {
 $serv->start();
 
 function json_text($type, $msg, $uid, $uname = '') {
-    return '{"type":"' . $type . '","data":"' . $msg . '","uid":"' . $uid . '","uname":"' . $uname . '"}';
+    return '{"type":"' . $type . '","data":"' . $msg . '","uid":' . intval($uid) . ',"uname":"' . $uname . '"}';
 }
