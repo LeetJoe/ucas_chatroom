@@ -8,10 +8,14 @@
 <body>
 <h1>This is a chatroom!</h1>
 <p>Of course, as you can see.</p>
+<form>
+
+</form>
 </body>
 <script type="text/javascript" src="/static/js/websocket.js?v=1.2.1"></script>
 <script type="text/javascript">
     var userid = null;
+    var username = '';
     /**webSocket**/
     try {
         //激活 socket
@@ -24,5 +28,21 @@
     } catch (e) {
         console.log(e);
     }
+
+    setTimeout(function () {
+		if (1 == websocket.readyState) {
+			//每20秒发一次请求,防止连接超时
+			setInterval(function () {
+				websocket.send('');
+			}, 20000);
+			websocket.onclose = function (evt) {
+				//if (confirm('<=_('行情数据连接已关闭，行情数据将不会再实时更新。是否刷新页面重试连接?')?>')) {
+				window.location.reload();
+				//}
+			};
+		} else {
+
+		}
+	}, 4000);
 </script>
 </html>
