@@ -1,12 +1,13 @@
 # ucas_chatroom
-for ucas home work only
 
-可以从阿里云盘[下载成品镜像](https://www.adrive.com)，可以省去环境配置和软件安装、代码部署的步骤。
+可以从云盘[下载成品镜像](https://pan.baidu.com/s/1VJI1EFsSPE_uxcENzdFEdg?pwd=6wy6)(提取码: 6wy6)，可以省去环境配置和软件安装、代码部署的步骤。
 > 虚拟机实例中的用户名及密码：
 > 
 > ucasuser/123456
 > 
 > root/Abc123!
+> 
+> 注：由于虚拟机打包时部署有一份测试代码，随着代码更新已经过时，使用时请从github中同步最新的代码到虚拟机中使用。
 
 # 操作系统与运行环境
 * [CentOS-7](https://mirrors.tuna.tsinghua.edu.cn/centos/7.9.2009/isos/x86_64/CentOS-7-x86_64-Everything-2009.iso)

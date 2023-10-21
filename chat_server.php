@@ -1,7 +1,5 @@
 <?php
 
-echo "what is the fuck\n";
-
 $socketConf = array(
     'reactor_num' => 8,
     'log_file' => "/home/ucasuser/www/ucaschat/log/chat.log",
