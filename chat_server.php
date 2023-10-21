@@ -4,8 +4,6 @@ echo "what is the fuck\n";
 
 $socketConf = array(
     'reactor_num' => 8,
-    'worker_num' => 4,
-    'task_worker_num' => 2,
     'log_file' => "/home/ucasuser/www/ucaschat/log/chat.log",
     'log_level' => 1,
     'user' => 'www',
@@ -14,61 +12,67 @@ $socketConf = array(
     'daemonize' => 1
 );
 
-$table = new Swoole\Table(32);
-$table->column('data', swoole_table::TYPE_STRING, 20480);
-$table->create();
-$config = array('name' => 'user', 'jtime');
-$table->set('config', array('data' => json_encode($config)));
-$config = json_decode((string)$table->get('config')['data'], true);
+$namelist = new swoole_table(2048);
+$namelist->column('fd', swoole_table::TYPE_INT);
+$namelist->column('name', swoole_table::TYPE_STRING, 127);
+$namelist->create();
 
-$serv = new Swoole\Server('127.0.0.1', 20230);
+$serv = new swoole_websocket_server('127.0.0.1', 20230);
 $serv->set($socketConf);
-$serv->on('Start', function($server) {
-    echo "new chat server started\n";
+
+$serv->on('open', function (swoole_websocket_server $server, $request) {
+    echo "new connection established with fd: {$request->fd}\n";
+    $server->push($request->fd, json_text("newconnect", "设置姓名后，开始聊天。", $request->fd));
 });
 
-// When get connected(join)
-$serv->on('Connect', function($server, $fd, $fromid) {
-    echo "$fd Connected \n";
-    // send prompt for username
-    $server->send($fd, 'name yourself!');
-});
-
-// When get message from client
-$serv->on('Receive', function($server, $fd, $fromid, $data) use ($table) {
-    // if username found, then broadcast to the table;
-    // if username not found, add into the table;
-    if (!$json = json_decode(trim((string)$data), true)) {
-        $server->send($fd, '{"status":0,"msg":"param error"}');
-        return;
-    }
-    $server->task('getmsg', 0);
-});
-
-# Task进程
-$serv->on('Task', function ($server, $taskid, $workerid, $data) use ($table) {
-    if ($data == 'getmsg') {
-        $server->send();
-    }
-    $server->finish("broadcast done");
-});
-
-# worker进程
-$serv->on('WorkerStart', function ($server, $workerId) use ($table) {
-    echo "new chat workder {$workerId} started.\n";
-});
-
-# 任务结束回调
-$serv->on('Finish', function($server, $taskid, $data) {
-    if ($data == 'done') {
-        echo "All needed password got.\n";
+$serv->on('message', function (swoole_websocket_server $server, $frame) use ($namelist) {
+    if ($frame->data) echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
+    if ($frame->data) {
+        $data = json_decode($frame->data); // {"type":"", "msg":""}
+        if ($data->type == 'join' && empty($namelist->get($frame->fd))) {
+            $uname = trim(strval($data->msg));
+            $namelist->set($frame->fd, array('fd' => $frame->fd, 'name' => $uname));
+            $server->push($frame->fd, json_text("join", "欢迎你，" . $uname . "！现在可以开始聊天了。", $frame->fd, $uname));
+            // notify all others
+            foreach ($namelist as $item) {
+                if ($item['fd'] == $frame->fd) continue;
+                $server->push($item['fd'], json_text("newjoin", $uname, 0));
+            }
+        } else if ($data->type == 'msg') {
+            $user = $namelist->get($frame->fd);
+            if (empty($user)) {
+                $server->push($frame->fd, json_text("newconnect", "设置姓名后，开始聊天。", $frame->fd));
+            } else {
+                $msg = trim(strval($data->msg));
+                if (!empty($msg)) {
+                    foreach ($namelist as $item) {
+                        $server->push($item['fd'], json_text("newmsg", $msg, $user['fd'], $user['name']));
+                    }
+                }
+            }
+        }
+        // $server->push($frame->fd, json_text("debug", "this is server", $frame->fd));
     }
 });
-
-// When closed(leave)
-$serv->on('Close', function($server, $fd, $fromid) {
-    echo "$fd Closed \n";
+$serv->on('request', function (swoole_http_request $request, swoole_http_response $response) use ($serv) {
+    // $server->connections 遍历所有websocket连接用户的fd，给所有用户推送
+    // foreach ($serv->connections as $fd) {
+    //     $serv->push($fd, $request->get['message']);
+    // }
+});
+$serv->on('close', function ($server, $fd) use ($namelist) {
+    $user = $namelist->get($fd);
+    if (!empty($user)) {
+        $namelist->del($fd);
+        echo "client {$fd} closed\n";
+        foreach ($namelist as $item) {
+            $server->push($item['fd'], json_text("leave", $user['name'], $user['fd']));
+        }
+    }
 });
 
 $serv->start();
 
+function json_text($type, $msg, $uid, $uname = '') {
+    return '{"type":"' . $type . '","data":"' . $msg . '","uid":"' . $uid . '","uname":"' . $uname . '"}';
+}

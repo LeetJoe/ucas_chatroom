@@ -45,27 +45,40 @@ function sendmsg(umsg, type='msg') {
 }
 
 //处理数据
-// data structure: {"type":"<type>", "uid": "<userid>", "uname": "<username>", "data":"<text message>"}
+// received data structure: {"type":"<type>", "uid": "<userid>", "uname": "<username>", "data":"<text message>"}
 function processWsData(d) {
     var data = JSON.parse(d);
     console.log('data.type: ' + data.type);
     if (data.type == 'newconnect') {
         // prompt for a name
+        var word = prompt(data.data,"");
+    　　 if(word){
+    　　      sendmsg(word, 'join');
+        }
 
     } else if (data.type == 'join') {
         // show welcome and record the userid
         userid = data.uid;
+        username = data.uname;
+        alert(data.data);
 
     } else if (data.type == 'newmsg') {
         // display the new message
         addnewmsg(data);
 
+    } else if (data.type == 'newjoin') {
+        // new user join
+        alert("用户“" + data.data + "”加入了聊天室。");
+
     } else if (data.type == 'leave') {
         // someone leave
+        alert("用户“" + data.data + "”离开了聊天室。");
 
-    } else if (data.type == 'closed') {
-        // this connection is closed
+    } else if (data.type == 'alert') {
+        alert(data.data);
 
+    } else if (data.type == 'debug') {
+        console.log(data.data);
     } else {
         console.log('message not valid.');
     }
@@ -77,10 +90,12 @@ function addnewmsg(data) {
     var msgname = data.uname;
     var msgtext = data.data;
     if (data.uid == userid) { // my message
+        console.log('you send: ' + msgtext);
         var domstr = '';
-        document.getElementById('chat_window').append(domstr);
+        // document.getElementById('chat_window').append(domstr);
     } else { // others message
+        console.log('user ' + msgname + ' send: ' + msgtext);
         var domstr = '';
-        document.getElementById('chat_window').append(domstr);
+        // document.getElementById('chat_window').append(domstr);
     }
 }
