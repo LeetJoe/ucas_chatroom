@@ -142,6 +142,17 @@ server {
 ```
 
 
+# 服务管理与运行监控
+```
+# 查看正在运行的服务进程
+ps aux | grep php | grep chat_server
+# 终止所有运行的服务进程
+ps aux | grep php | grep chat_server | awk '{print $2}' | xargs kill -9
+
+# 查看运行日志
+tail -f /home/ucasuser/www/ucaschat/log/chat.log
+```
+
 # 功能验证
 在进行测试的客户端主机上添加下面的路由项：
 ```
@@ -149,19 +160,7 @@ server {
 192.168.56.102 socket.ucaschatroom.com
 ```
 其中前面的*192.168.56.102*是通过客户机可访问的虚拟机（作为服务器）的IP地址，需要根据自己本地网络的实际情况进行修改。
-
-
-
-
-```
-ps aux | grep php | grep server | awk '{print $2}'
-
-ps aux | grep php | grep server | awk '{print $2}' | xargs kill -9
-
-
-tail -f /home/ucasuser/www/ucaschat/log/chat.log
-
-```
+在两台不同的机器或者同一台机器上两个不同的浏览器窗口进行测试。
 
 
 
