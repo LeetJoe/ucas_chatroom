@@ -164,6 +164,13 @@ tail -f /home/ucasuser/www/ucaschat/log/chat.log
 在两台不同的机器或者同一台机器上两个不同的浏览器窗口进行测试，给自己起一个昵称，就可以开始聊天了。
 
 
+### 首先设置一个昵称
+![alt 设置昵称](static/img/setname.png)
 
+### 小王视角
+![alt 小王视角](static/img/xiaowang.png)
+
+### 小红视角
+![alt 小红视角](static/img/xiaohong.png)
 
 
