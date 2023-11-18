@@ -1,5 +1,7 @@
 # ucas_chatroom
 
+![alt 服务架构](static/img/servicestack.png)
+
 可以从云盘[下载成品镜像](https://pan.baidu.com/s/1VJI1EFsSPE_uxcENzdFEdg?pwd=6wy6)(提取码: 6wy6)，可以省去环境配置和软件安装、代码部署的步骤。
 > 虚拟机实例中的用户名及密码：
 > 
